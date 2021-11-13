@@ -30,6 +30,10 @@ function Transaction:calculateHash()
 end
 
 function Transaction:sign(privateKey)
+    if not privateKey then
+        return false
+    end
+
     self.signature = crypto.crypto.sign(privateKey, self:toString())
 end
 
@@ -39,4 +43,14 @@ end
 
 function Transaction:verifyHash()
     return textutils.serialise(sha256.sha256.digest(self:toString())) == textutils.serialise(self.hash)
+end
+
+function Transaction:verify()
+    local validHash = self:verifyHash()
+    local validSignature = self:verifySignature()
+    local validAuthor = type(self.author) == "table"
+    local validRecipient = type(self.recipient) == "table"
+    local validAmount = type(self.amount) == "number"
+
+    return validHash and validSignature and validAuthor and validRecipient and validAmount
 end
