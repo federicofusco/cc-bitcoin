@@ -22,7 +22,7 @@ function Transaction:create(author, recipient, amount)
 end
 
 function Transaction:toString()
-    return self.author.."."..self.recipient.."."..self.amount 
+    return textutils.serialise(self.author).."."..textutils.serialise(self.recipient).."."..self.amount 
 end
 
 function Transaction:calculateHash()
@@ -38,5 +38,5 @@ function Transaction:verifySignature()
 end
 
 function Transaction:verifyHash()
-    return Transaction:calculateHash() == self.hash
+    return textutils.serialise(sha256.sha256.digest(self:toString())) == textutils.serialise(self.hash)
 end
