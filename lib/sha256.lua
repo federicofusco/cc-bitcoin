@@ -131,11 +131,7 @@ sha256 = (function()
         local C = {upack(H)}
         for i = 1, #data do C = digestblock(data[i], C) end
         
-        if hex then
-            return toBytes(C, 8):toHex()
-        else 
-            return toBytes(C, 8)
-        end
+        return if hex then toBytes(C, 8):toHex() else toBytes(C, 8) end
     end
 
     local function hmac(data, key)
