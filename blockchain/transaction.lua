@@ -30,5 +30,12 @@ function Transaction:calculateHash()
 end
 
 function Transaction:sign(privateKey)
-    self.signature = crypto.crypto.sign(privateKey, self:toString()):toHex()
+    self.signature = crypto.crypto.sign(privateKey, self:toString())
+end
+
+function Transaction:verify(publicKey)
+    print(type(publicKey))
+    print(type(self:toString()))
+    print(type(self.signature))
+    return crypto.crypto.verify(publicKey, self:toString(), self.signature)
 end
