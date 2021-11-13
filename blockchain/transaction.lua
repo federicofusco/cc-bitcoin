@@ -15,19 +15,20 @@ function Transaction:create(author, recipient, amount)
     instance.recipient = recipient
     instance.amount = amount
     instance.hash = nil
+    instance.signature = nil
 
     return instance
 
 end
 
 function Transaction:toString()
-    return self.author.."."..self.recipient.."."..self.amount
+    return self.author.."."..self.recipient.."."..self.amount 
 end
 
-function Transaction:calculateHash(returns)
-    self.hash = sha256.sha256.digest(self:toString(), true)
+function Transaction:calculateHash()
+    self.hash = sha256.sha256.digest(self:toString())
+end
 
-    if returns then
-        return self.hash
-    end
+function Transaction:sign(privateKey)
+    self.signature = crypto.crypto.sign(privateKey, self:toString()):toHex()
 end
