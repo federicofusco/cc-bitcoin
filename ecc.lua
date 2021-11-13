@@ -1,8 +1,24 @@
 -- Imports arithmetic 
 os.loadAPI("lib/bigint")
 
+local byteTableMT = {
+    __tostring = function(a) return string.char(unpack(a)) end,
+    __index = {
+        toHex = function(self) return ("%02x"):rep(#self):format(unpack(self)) end,
+        isEqual = function(self, t)
+            if type(t) ~= "table" then return false end
+            if #self ~= #t then return false end
+            local ret = 0
+            for i = 1, #self do
+                ret = bit32.bor(ret, bit32.bxor(self[i], t[i]))
+            end
+            return ret == 0
+        end
+    }
+}
+
 -- Elliptic curve arithmetic
-local curve = (function()
+curve = (function()
     ---- About the Curve Itself
     -- Field Size: 168 bits
     -- Field Modulus (p): 481 * 2^159 + 3
@@ -48,7 +64,7 @@ local curve = (function()
     local p = {3, 0, 0, 0, 0, 0, 15761408}
     local pMinusTwoBinary = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1}
     local pMinusThreeOverFourBinary = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1}
-    local G = {
+    G = {
         {6636044, 10381432, 15741790, 2914241, 5785600, 264923, 4550291},
         {13512827, 8449886, 5647959, 1135556, 5489843, 7177356, 8002203},
         {unpack(ONE)}

@@ -1,3 +1,23 @@
+-- Imports random byte generator
+os.loadAPI("lib/random")
+os.loadAPI("lib/sha256")
+
+local byteTableMT = {
+    __tostring = function(a) return string.char(unpack(a)) end,
+    __index = {
+        toHex = function(self) return ("%02x"):rep(#self):format(unpack(self)) end,
+        isEqual = function(self, t)
+            if type(t) ~= "table" then return false end
+            if #self ~= #t then return false end
+            local ret = 0
+            for i = 1, #self do
+                ret = bit32.bor(ret, bit32.bxor(self[i], t[i]))
+            end
+            return ret == 0
+        end
+    }
+}
+
 -- Big integer arithmetic for 168-bit (and 336-bit) numbers
 -- Numbers are represented as little-endian tables of 24-bit integers
 arith = (function()
@@ -762,7 +782,7 @@ modq = (function()
 
     local function randomModQ()
         while true do
-            local s = {unpack(random.random(), 1, 21)}
+            local s = {unpack(random.random.random(), 1, 21)}
             local result = decodeInt(s)
             if result[7] < q[7] then
                 return setmetatable(result, modQMT)
@@ -771,7 +791,7 @@ modq = (function()
     end
 
     local function hashModQ(data)
-        return decodeModQ(sha256.digest(data))
+        return decodeModQ(sha256.sha256.digest(data))
     end
 
     modQMT = {
