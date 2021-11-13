@@ -38,6 +38,11 @@ crypto = (function ()
     end
 
     local function sign(privateKey, data)
+
+        if not privateKey or not data then
+            return false
+        end
+
         local data = type(data) == "table" and string.char(unpack(data)) or tostring(data)
         local privateKey = type(privateKey) == "table" and string.char(unpack(privateKey)) or tostring(privateKey)
 
@@ -59,6 +64,11 @@ crypto = (function ()
     end
 
     local function verify(publicKey, data, signature)
+
+        if not publicKey or not data or not signature then
+            return false
+        end
+
         local data = type(data) == "table" and string.char(unpack(data)) or tostring(data)
 
         local Y = ecc.curve.pointDecode(publicKey)
