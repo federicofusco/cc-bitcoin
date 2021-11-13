@@ -123,14 +123,19 @@ sha256 = (function()
         return setmetatable(b, byteTableMT)
     end
 
-    local function digest(data)
+    local function digest(data, hex)
         data = data or ""
         data = type(data) == "table" and {upack(data)} or {tostring(data):byte(1,-1)}
 
         data = preprocess(data)
         local C = {upack(H)}
         for i = 1, #data do C = digestblock(data[i], C) end
-        return toBytes(C, 8)
+        
+        if hex then
+            return toBytes(C, 8):toHex()
+        else 
+            return toBytes(C, 8)
+        end
     end
 
     local function hmac(data, key)
