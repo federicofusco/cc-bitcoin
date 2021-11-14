@@ -14,6 +14,8 @@ function Block:createGenesis()
     instance.difficulty = 0
     instance.id = 0
     instance.genesis = true
+    
+    instance:calculateHash()
 
     return instance
 
@@ -34,14 +36,9 @@ function Block:create(limit, difficulty, id)
 end
 
 function Block:toString()
+    return self.limit.."."..self.difficulty.."."..self.id.."."..textutils.serialise(transactions)
+end
 
-    -- Converts transactions to string
-    local transactions = ""
-    for i = 0, table.getn(self.transactions) do
-        if self.transactions[i] then
-            transactions = transactions..self.transactions[i]:toString()
-        end
-    end
-
-    return self.limit.."."..self.difficulty.."."..self.id.."."..transactions
+function Block:calculateHash()
+    self.hash = sha256.sha256.digest(self:toString())
 end
