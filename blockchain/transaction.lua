@@ -29,10 +29,6 @@ function Transaction:calculateHash()
 end
 
 function Transaction:sign(privateKey)
-    if not privateKey then
-        return false
-    end
-
     self.signature = crypto.crypto.sign(privateKey, self:toString())
 end
 
@@ -45,11 +41,11 @@ function Transaction:verifyHash()
 end
 
 function Transaction:verify()
-    local validHash = self:verifyHash()
-    local validSignature = self:verifySignature()
-    local validAuthor = type(self.author) == "table"
-    local validRecipient = type(self.recipient) == "table"
-    local validAmount = type(self.amount) == "number"
+    local validHash = self.hash and self:verifyHash()
+    local validSignature = self.signature and self:verifySignature()
+    local validAuthor = self.author and type(self.author) == "table"
+    local validRecipient = self.recipient and type(self.recipient) == "table"
+    local validAmount = self.amount and type(self.amount) == "number"
 
     return validHash and validSignature and validAuthor and validRecipient and validAmount
 end
