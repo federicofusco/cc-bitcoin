@@ -42,3 +42,16 @@ end
 function Block:calculateHash()
     self.hash = sha256.sha256.digest(self:toString())
 end
+
+function Block:addTransaction(transaction)
+    if transaction:verify() then
+        if table.getn(self.transactions) < self.limit then
+            self.transactions[table.getn(self.transactions) + 1] = transaction
+            self:calculateHash()
+        else
+            return "Limit exceeded"
+        end
+    else 
+        return "Invalid transaction"
+    end
+end
