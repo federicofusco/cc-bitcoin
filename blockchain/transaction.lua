@@ -1,4 +1,3 @@
--- This class will define how we store transactions in the blockchain
 Transaction = {}
 Transaction.__index = Transaction
 
