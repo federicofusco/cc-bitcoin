@@ -13,8 +13,10 @@ function Transaction:create(author, recipient, amount)
     instance.author = author
     instance.recipient = recipient
     instance.amount = amount
-    instance.hash = nil
-    instance.signature = nil
+    instance.hash = ""
+    instance.signature = {}
+
+    instance:calculateHash()
 
     return instance
 
@@ -25,7 +27,7 @@ function Transaction:toString()
 end
 
 function Transaction:calculateHash()
-    self.hash = sha256.sha256.digest(self:toString())
+    self.hash = sha256.sha256.digest(self:toString(), true)
 end
 
 function Transaction:sign(privateKey)
@@ -37,15 +39,15 @@ function Transaction:verifySignature()
 end
 
 function Transaction:verifyHash()
-    return textutils.serialise(sha256.sha256.digest(self:toString())) == textutils.serialise(self.hash)
+    return sha256.sha256.digest(self:toString(), true) == self.hash
 end
 
 function Transaction:verify()
-    local validHash = self.hash and self:verifyHash()
+    local validHash      = self.hash and self:verifyHash()
     local validSignature = self.signature and self:verifySignature()
-    local validAuthor = self.author and type(self.author) == "table"
+    local validAuthor    = self.author and type(self.author) == "table" and textutils.serialise(self.author) ~= textutils.serialise(self.recipient)
     local validRecipient = self.recipient and type(self.recipient) == "table"
-    local validAmount = self.amount and type(self.amount) == "number"
+    local validAmount    = self.amount and type(self.amount) == "number" and self.amount > 0
 
     return validHash and validSignature and validAuthor and validRecipient and validAmount
 end
