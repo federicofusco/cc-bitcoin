@@ -36,6 +36,7 @@ function Block:create(difficulty, id, prevHash)
     instance.prevHash = prevHash
     instance.hash = ""
     instance.nonce = 0
+    instance.miner = {}
 
     instance:calculateHash()
 
@@ -44,7 +45,7 @@ function Block:create(difficulty, id, prevHash)
 end
 
 function Block:toString()
-    return textutils.serialise(self.transactions).."."..self.limit.."."..self.id.."."..self.difficulty.."."..self.prevHash.."."..self.nonce
+    return textutils.serialise(self.transactions).."."..self.limit.."."..self.id.."."..self.difficulty.."."..self.prevHash.."."..self.nonce.."."..textutils.serialise(self.miner)
 end
 
 function Block:calculateHash()
@@ -61,7 +62,7 @@ end
 
 function Block:isMined()
     if self:isFull() then
-        return tonumber(string.sub(sha256.sha256.digest(self:toString()), 1, self.difficulty)) == 0
+        return tonumber(string.sub(sha256.sha256.digest(self:toString(), true), 1, self.difficulty)) == 0
     else
         return false
     end
@@ -71,6 +72,7 @@ function Block:addTransaction(transaction)
     if transaction and transaction:verify() then
         if not self:isFull() then
             self.transactions[table.getn(self.transactions) + 1] = transaction
+            self:calculateHash()
         else
             return "Exceeding block limit"
         end
@@ -89,24 +91,37 @@ function Block:verifyTransactions()
     else
         return false
     end
+
+    return true
 end
 
-function Block:verify(checkIfMined)
+function Block:verify()
 
     local validTransactions = self.transactions and type(self.transactions) == "table" and self:verifyTransactions()
-    local validLimit        = self.limit and type(self.limit) == "number" > 1
+    local validLimit        = self.limit and type(self.limit) == "number"
     local validId           = self.id and type(self.id) == "number"
     local validDifficulty   = self.difficulty and type(self.difficulty) == "number" and self.difficulty > 1
     local validPrevHash     = self.prevHash and type(self.prevHash) == "string"
     local validHash         = self.hash and type(self.hash) == "string" and self:verifyHash()
     local validNonce        = self.nonce and type(self.nonce) == "number"
     
-    local valid = validTransactions and validLimit and validId and validDifficulty and validPrevHash and validHash and validNonce
+    return validTransactions and validLimit and validId and validDifficulty and validPrevHash and validHash and validNonce
 
-    if checkIfMined then
-        return valid and self:isMined()
-    else
-        return valid
+end
+
+function Block:mine(publicKey)
+
+    if not self:verify () then
+        return "Invalid block"
+    end 
+
+    self.miner = publicKey
+
+    while not self:isMined() do
+        self.nonce = self.nonce + 1
+        self:calculateHash()
     end
+
+    return true
 
 end
