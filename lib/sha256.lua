@@ -123,6 +123,12 @@ sha256 = (function()
         return setmetatable(b, byteTableMT)
     end
 
+    --[[
+        @desc Hashes the given data
+        @param [string] data -- The data which should be hashed
+        @param [boolean] hex -- Whether or not the output should be a hex encoded string
+        @returns [table, string] The hash
+    ]]
     local function digest(data, hex)
         data = data or ""
         data = type(data) == "table" and {upack(data)} or {tostring(data):byte(1,-1)}
@@ -134,70 +140,7 @@ sha256 = (function()
         return if hex then toBytes(C, 8):toHex() else toBytes(C, 8) end
     end
 
-    local function hmac(data, key)
-        local data = type(data) == "table" and {upack(data)} or {tostring(data):byte(1,-1)}
-        local key = type(key) == "table" and {upack(key)} or {tostring(key):byte(1,-1)}
-
-        local blocksize = 64
-
-        key = #key > blocksize and digest(key) or key
-
-        local ipad = {}
-        local opad = {}
-        local padded_key = {}
-
-        for i = 1, blocksize do
-            ipad[i] = bxor(0x36, key[i] or 0)
-            opad[i] = bxor(0x5C, key[i] or 0)
-        end
-
-        for i = 1, #data do
-            ipad[blocksize+i] = data[i]
-        end
-
-        ipad = digest(ipad)
-
-        for i = 1, blocksize do
-            padded_key[i] = opad[i]
-            padded_key[blocksize+i] = ipad[i]
-        end
-
-        return digest(padded_key)
-    end
-
-    local function pbkdf2(pass, salt, iter, dklen)
-        local salt = type(salt) == "table" and salt or {tostring(salt):byte(1,-1)}
-        local hashlen = 32
-        local dklen = dklen or 32
-        local block = 1
-        local out = {}
-
-        while dklen > 0 do
-            local ikey = {}
-            local isalt = {upack(salt)}
-            local clen = dklen > hashlen and hashlen or dklen
-
-            isalt[#isalt+1] = band(brshift(block, 24), 0xFF)
-            isalt[#isalt+1] = band(brshift(block, 16), 0xFF)
-            isalt[#isalt+1] = band(brshift(block, 8), 0xFF)
-            isalt[#isalt+1] = band(block, 0xFF)
-
-            for j = 1, iter do
-                isalt = hmac(isalt, pass)
-                for k = 1, clen do ikey[k] = bxor(isalt[k], ikey[k] or 0) end
-                if j % 200 == 0 then os.queueEvent("PBKDF2", j) coroutine.yield("PBKDF2") end
-            end
-            dklen = dklen - clen
-            block = block+1
-            for k = 1, clen do out[#out+1] = ikey[k] end
-        end
-
-        return setmetatable(out, byteTableMT)
-    end
-
     return {
-        digest = digest,
-        hmac = hmac,
-        pbkdf2 = pbkdf2
+        digest = digest
     }
 end)()

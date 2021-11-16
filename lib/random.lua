@@ -60,6 +60,10 @@ random = (function()
         save()
     end
 
+    --[[
+        @desc Generates random bytes
+        @returns [table] Random bytes
+    ]]
     local function random()
         feed("random")
         feed(tostring(os.epoch("utc")))

@@ -20,6 +20,11 @@ os.loadAPI("lib/ecc")
 
 crypto = (function ()
 
+    --[[
+        @desc Generates an ECC keypair based on a given seed
+        @param [string, number] seed -- The seed which will be used to generated the keypair
+        @returns [table] The private and public keypair
+    ]]
     local function generateKeypair(seed) 
         local x
 
@@ -37,6 +42,12 @@ crypto = (function ()
         return privateKey, publicKey
     end
 
+    --[[
+        @desc Signs data based on a given private key
+        @param [table] privateKey   -- The key which should be used to generate the signature
+        @param [table, string] data -- The data which should be signed
+        @returns [table] The signature
+    ]]
     local function sign(privateKey, data)
 
         local data = type(data) == "table" and string.char(unpack(data)) or tostring(data)
@@ -59,6 +70,13 @@ crypto = (function ()
         return setmetatable(result, byteTableMT)
     end
 
+    --[[
+        @desc Verifies a signature's validity
+        @param [table] publicKey    -- The public key associated with the private key that generates the signature
+        @param [table, string] data -- The data which was signed
+        @param [table] signature    -- The signature
+        @returns [boolean] Whether or not the signature is valid
+    ]]
     local function verify(publicKey, data, signature)
 
         local data = type(data) == "table" and string.char(unpack(data)) or tostring(data)
