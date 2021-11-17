@@ -153,11 +153,12 @@ end
 
 --[[
     @desc Mines the block using a given public key
-    @param [table] publicKey The public key which is going to recieve the mining reward
+    @param [table] publicKey -- The public key which is going to recieve the mining reward
+    @param [boolean] verify  -- Whether or not to check if the block is valid
 ]]
-function Block:mine(publicKey)
+function Block:mine(publicKey, verify)
 
-    if not self:verify () then
+    if verify and not self:verify () then
         return "Invalid block"
     end 
 
